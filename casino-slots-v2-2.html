@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🍒 FruitMania Casino</title>
+<style>
+:root {
+  --gold: #FFD700;
+  --gold2: #FF8C00;
+  --dark: #07070f;
+  --panel: #0f0f1e;
+  --panel2: #14142a;
+  --neon: #00f5d4;
+  --neon2: #f72585;
+  --green: #00ff88;
+  --purple: #cc88ff;
+  --red: #ff4466;
+  --reel-bg: #060610;
+  --border: #1e1e3a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{width:100%;min-height:100%;overflow-x:hidden;background:var(--dark)}
+body{
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%,#18003a 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 90%,#001830 0%,transparent 60%),
+    linear-gradient(180deg,#07070f,#050510);
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 0 40px;
+  font-family:'Segoe UI',system-ui,sans-serif;color:#fff;
+}
+
+/* ─── HEADER ─── */
+.logo-wrap{text-align:center;padding:16px 10px 8px;width:100%}
+.logo{
+  font-size:clamp(26px,8vw,52px);font-weight:900;letter-spacing:3px;
+  background:linear-gradient(135deg,#FFD700 0%,#FF8C00 40%,#FFD700 70%,#FFF176 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px rgba(255,200,0,.65));
+  display:inline-block;
+}
+.sub{font-size:10px;letter-spacing:5px;color:#666;text-transform:uppercase;margin-top:2px}
+
+/* ─── PROGRESSIVE JACKPOT ─── */
+.jp-outer{
+  width:min(98vw,520px);margin-bottom:8px;
+  background:linear-gradient(135deg,#130828,#0c0520);
+  border:1px solid #3e1a6a;border-radius:16px;
+  padding:12px 16px;text-align:center;position:relative;overflow:hidden;
+}
+.jp-outer::before{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(200,120,255,.07),transparent);
+  animation:shimmer 2.2s linear infinite;
+}
+@keyframes shimmer{to{left:140%}}
+.jp-label{font-size:9px;letter-spacing:3px;color:#aa55ff;text-transform:uppercase;margin-bottom:4px}
+.jp-value{
+  font-size:clamp(22px,7vw,38px);font-weight:900;color:#cc88ff;
+  text-shadow:0 0 24px rgba(200,100,255,.6);
+}
+
+/* ─── MACHINE ─── */
+.machine{
+  width:min(98vw,520px);
+  background:linear-gradient(165deg,#1a1a30,#12122a,#0d0d1f);
+  border-radius:26px;border:2px solid #20204a;
+  box-shadow:0 0 50px rgba(0,245,212,.06),0 0 0 1px rgba(255,255,255,.03),
+             inset 0 1px 0 rgba(255,255,255,.05);
+  padding:14px 12px 20px;position:relative;overflow:hidden;
+}
+.machine::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--neon),var(--neon2),transparent);
+  animation:topline 3s linear infinite;
+}
+@keyframes topline{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* ─── WIN DISPLAY ─── */
+.win-display{text-align:center;min-height:42px;margin:4px 0 6px;position:relative}
+.win-msg{font-size:10px;letter-spacing:3px;color:#777;text-transform:uppercase;transition:color .3s}
+.win-amount{
+  font-size:clamp(24px,7vw,40px);font-weight:900;color:var(--gold);
+  text-shadow:0 0 24px rgba(255,215,0,.8);display:inline-block;
+  animation:winPop .4s cubic-bezier(.17,.67,.43,1.35) both;
+}
+@keyframes winPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+
+/* ─── REELS ─── */
+.reels-wrap{
+  background:var(--reel-bg);border-radius:14px;
+  border:1.5px solid #1a1a34;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.9);
+  padding:7px 5px;position:relative;overflow:hidden;
+}
+.reels-mask{
+  position:absolute;inset:0;pointer-events:none;z-index:10;
+  background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,transparent 22%,transparent 78%,rgba(0,0,0,.7) 100%);
+}
+.win-bar{
+  position:absolute;top:50%;left:0;right:0;height:3px;
+  margin-top:-1.5px;z-index:15;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--gold) 15%,var(--gold) 85%,transparent);
+  box-shadow:0 0 14px var(--gold),0 0 35px rgba(255,215,0,.45);
+  opacity:0;transition:opacity .3s;
+}
+.win-bar.on{opacity:1}
+.reel-row{display:flex;gap:5px;margin-bottom:5px}
+.reel-row:last-child{margin-bottom:0}
+.cell{
+  flex:1;height:clamp(68px,17vw,96px);
+  background:linear-gradient(180deg,#0d0d1e,#08080f);
+  border-radius:9px;border:1px solid #18183a;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(30px,8.5vw,54px);
+  position:relative;overflow:hidden;transition:border-color .2s;
+}
+.cell.hl{
+  border-color:rgba(255,215,0,.7);
+  box-shadow:0 0 14px rgba(255,215,0,.35);
+  animation:cellPulse .5s ease-in-out infinite alternate;
+}
+@keyframes cellPulse{from{transform:scale(1)}to{transform:scale(1.08)}}
+.cell.spin-anim span{animation:spinBlur .08s linear infinite}
+@keyframes spinBlur{0%,100%{filter:blur(0)}50%{filter:blur(2px) brightness(.8)}}
+
+/* ─── FREE SPINS BANNER ─── */
+.fs-banner{
+  display:none;background:linear-gradient(135deg,#001a0a,#002a10);
+  border:2px solid var(--green);border-radius:12px;
+  padding:10px 14px;text-align:center;margin:6px 0;
+  box-shadow:0 0 20px rgba(0,255,136,.25);
+}
+.fs-banner.on{display:block}
+.fs-banner-title{font-size:11px;letter-spacing:4px;color:var(--green);text-transform:uppercase}
+.fs-count{font-size:clamp(28px,9vw,44px);font-weight:900;color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.7)}
+.fs-mult{font-size:12px;color:#88ffcc;letter-spacing:2px;margin-top:2px}
+
+/* ─── PAYLINES DOTS ─── */
+.pdots{display:flex;justify-content:center;gap:4px;margin:6px 0 3px;flex-wrap:wrap}
+.pdot{width:8px;height:8px;border-radius:50%;background:#1e1e3a;transition:all .3s}
+.pdot.on{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+
+/* ─── STATS ─── */
+.stats{display:flex;gap:6px;margin:7px 0}
+.stat{
+  flex:1;background:linear-gradient(135deg,#111128,#0d0d20);
+  border:1px solid var(--border);border-radius:12px;
+  padding:9px 6px;text-align:center;
+}
+.stat-lbl{font-size:8px;letter-spacing:2px;color:#555;text-transform:uppercase;margin-bottom:3px}
+.stat-val{font-size:clamp(14px,3.8vw,22px);font-weight:700}
+
+/* ─── CONTROLS ─── */
+.ctrl-block{
+  display:flex;align-items:center;gap:7px;margin:5px 0;
+  background:linear-gradient(135deg,#0d0d1e,#111126);
+  border:1px solid var(--border);border-radius:13px;padding:9px 11px;
+}
+.ctrl-lbl{font-size:8px;letter-spacing:2px;color:#555;text-transform:uppercase;white-space:nowrap}
+.btn-row{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
+.cbtn{
+  background:linear-gradient(135deg,#17172e,#101022);
+  border:1px solid #2a2a50;border-radius:8px;color:#aaa;
+  font-size:clamp(9px,2.7vw,13px);font-weight:700;
+  padding:7px 9px;cursor:pointer;transition:all .15s;
+  -webkit-appearance:none;outline:none;
+}
+.cbtn:active,.cbtn.sel{
+  background:linear-gradient(135deg,#cc7700,#aa5500);
+  border-color:var(--gold);color:#000;
+  box-shadow:0 0 12px rgba(255,165,0,.45);
+}
+.lbtn{
+  background:#111128;border:1px solid #262650;border-radius:7px;
+  color:#aaa;font-size:clamp(9px,2.5vw,12px);font-weight:700;
+  padding:6px 9px;cursor:pointer;transition:all .15s;
+  -webkit-appearance:none;outline:none;
+}
+.lbtn:active,.lbtn.sel{
+  background:linear-gradient(135deg,#0f1a3d,#091430);
+  border-color:var(--neon);color:var(--neon);
+  box-shadow:0 0 8px rgba(0,245,212,.3);
+}
+
+/* ─── SPIN AREA ─── */
+.spin-area{display:flex;gap:9px;align-items:stretch;margin-top:9px}
+.auto-btn{
+  background:linear-gradient(135deg,#111126,#0d0d1e);
+  border:1px solid #262650;border-radius:13px;
+  color:#666;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  padding:0 14px;cursor:pointer;-webkit-appearance:none;min-height:52px;
+  transition:all .2s;white-space:nowrap;
+}
+.auto-btn.on{
+  background:linear-gradient(135deg,#0a1f14,#071510);
+  border-color:var(--green);color:var(--green);
+  box-shadow:0 0 12px rgba(0,255,136,.3);
+}
+.spin-btn{
+  flex:1;
+  background:linear-gradient(135deg,#a07010,#FFD700 35%,#FFF176 55%,#FFD700 70%,#a07010);
+  border:none;border-radius:15px;
+  font-size:clamp(20px,5.5vw,30px);font-weight:900;letter-spacing:4px;
+  color:#1a0a00;text-transform:uppercase;padding:15px 10px;
+  cursor:pointer;-webkit-appearance:none;
+  box-shadow:0 4px 22px rgba(255,215,0,.5),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:all .15s;position:relative;overflow:hidden;
+}
+.spin-btn::before{
+  content:'';position:absolute;top:-50%;left:-70%;width:45%;height:200%;
+  background:rgba(255,255,255,.22);transform:skewX(-20deg);
+  transition:left .5s;pointer-events:none;
+}
+.spin-btn:not(:disabled):hover::before{left:130%}
+.spin-btn:active:not(:disabled){transform:scale(.97);box-shadow:0 2px 12px rgba(255,215,0,.4)}
+.spin-btn:disabled{opacity:.65;cursor:not-allowed}
+.spin-btn.spinning{animation:spinGlow .55s ease-in-out infinite alternate}
+@keyframes spinGlow{from{box-shadow:0 4px 20px rgba(255,215,0,.3)}to{box-shadow:0 4px 35px rgba(255,215,0,.75)}}
+.max-btn{
+  background:linear-gradient(135deg,#1a0828,#0f051a);
+  border:1px solid #4a1a70;border-radius:13px;color:var(--purple);
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  padding:0 12px;cursor:pointer;-webkit-appearance:none;min-height:52px;
+  transition:all .2s;
+}
+.max-btn:active{background:linear-gradient(135deg,#3a1260,#261040);box-shadow:0 0 14px rgba(200,100,255,.35)}
+
+/* ─── HISTORY ─── */
+.history{display:flex;gap:4px;margin-top:7px;overflow:hidden}
+.h-item{
+  flex:1;text-align:center;font-size:9px;font-weight:700;
+  padding:4px 2px;border-radius:5px;min-width:0;
+  border:1px solid #181830;color:#444;
+  background:rgba(255,0,50,.04);
+  transition:all .2s;
+}
+.h-item.w{background:rgba(255,215,0,.07);border-color:rgba(255,215,0,.3);color:var(--gold)}
+.h-item.fs{background:rgba(0,255,136,.07);border-color:rgba(0,255,136,.3);color:var(--green)}
+
+/* ─── PAYTABLE ─── */
+.pt-btn{
+  width:100%;background:linear-gradient(135deg,#0d0d1e,#111126);
+  border:1px solid var(--border);border-radius:11px;color:#666;
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:10px;cursor:pointer;margin-top:7px;-webkit-appearance:none;transition:all .2s;
+}
+.pt-btn:active{color:var(--neon);border-color:var(--neon)}
+.paytable{
+  display:none;background:linear-gradient(135deg,#09091a,#0c0c22);
+  border:1px solid var(--border);border-radius:14px;padding:13px;margin-top:7px;
+}
+.paytable.open{display:block}
+.pt-title{
+  text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;
+  color:var(--gold);text-transform:uppercase;
+  border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:10px;
+}
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
+.pt-row{
+  display:flex;align-items:center;gap:5px;
+  background:#0e0e1e;border-radius:8px;padding:5px 8px;
+  border:1px solid #181830;
+}
+.pt-sym{font-size:18px;line-height:1}
+.pt-name{font-size:8px;color:#666;letter-spacing:1px;text-transform:uppercase}
+.pt-pays{font-size:11px;font-weight:700;color:var(--gold)}
+
+.special-grid{display:flex;flex-direction:column;gap:4px}
+.sp-row{
+  display:flex;align-items:center;gap:8px;
+  background:#0e0e1e;border:1px solid #181830;border-radius:8px;padding:6px 9px;
+}
+.sp-syms{font-size:14px;letter-spacing:1px}
+.sp-desc{flex:1;font-size:9px;color:#888;letter-spacing:.5px}
+.sp-prize{font-size:13px;font-weight:700}
+
+.pt-note{
+  margin-top:8px;font-size:8px;color:#444;text-align:center;
+  letter-spacing:1px;line-height:1.6;
+}
+
+/* ─── OVERLAYS ─── */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:1000;
+  align-items:center;justify-content:center;flex-direction:column;
+  background:rgba(0,0,0,.88);padding:20px;
+}
+.overlay.on{display:flex}
+
+/* BIG WIN overlay */
+.bw-title{
+  font-size:clamp(36px,12vw,72px);font-weight:900;text-align:center;
+  background:linear-gradient(135deg,#FFD700,#FF8C00,#FFD700);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:jackAnim .55s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 20px rgba(255,200,0,.6));
+}
+.bw-amount{
+  font-size:clamp(28px,9vw,58px);font-weight:900;color:#fff;
+  text-shadow:0 0 30px rgba(255,215,0,.8);margin-top:10px;text-align:center;
+}
+.bw-sub{font-size:11px;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-top:4px}
+.bw-close{
+  margin-top:22px;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  border:none;border-radius:13px;color:#1a0800;
+  font-size:18px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+  padding:14px 40px;cursor:pointer;-webkit-appearance:none;
+  box-shadow:0 4px 20px rgba(255,165,0,.45);
+}
+
+/* FREE SPINS INTRO overlay */
+.fs-intro-title{
+  font-size:clamp(30px,10vw,60px);font-weight:900;color:var(--green);
+  text-shadow:0 0 30px rgba(0,255,136,.7);text-align:center;
+  animation:jackAnim .55s ease-in-out infinite alternate;
+}
+.fs-intro-sub{font-size:12px;letter-spacing:4px;color:#88ffcc;text-transform:uppercase;margin-top:8px;text-align:center}
+.fs-intro-count{font-size:clamp(60px,18vw,100px);font-weight:900;color:var(--green);text-shadow:0 0 40px rgba(0,255,136,.8);line-height:1}
+.fs-intro-mult{font-size:clamp(20px,6vw,34px);font-weight:700;color:#aaffdd;margin-top:4px}
+.fs-start-btn{
+  margin-top:22px;
+  background:linear-gradient(135deg,#005520,#00aa44);
+  border:2px solid var(--green);border-radius:13px;color:#fff;
+  font-size:18px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+  padding:14px 40px;cursor:pointer;-webkit-appearance:none;
+  box-shadow:0 4px 20px rgba(0,255,136,.35);
+}
+
+/* FREE SPINS COMPLETE overlay */
+.fsc-title{
+  font-size:clamp(24px,8vw,52px);font-weight:900;color:var(--green);
+  text-shadow:0 0 24px rgba(0,255,136,.7);text-align:center;
+}
+.fsc-total{font-size:clamp(30px,9vw,60px);font-weight:900;color:var(--gold);
+  text-shadow:0 0 28px rgba(255,215,0,.8);margin:10px 0;text-align:center}
+.fsc-spins{font-size:11px;letter-spacing:3px;color:#888;text-transform:uppercase;text-align:center}
+.fsc-close{
+  margin-top:20px;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  border:none;border-radius:13px;color:#1a0800;
+  font-size:17px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+  padding:13px 36px;cursor:pointer;-webkit-appearance:none;
+}
+
+@keyframes jackAnim{from{transform:scale(1) rotate(-.8deg)}to{transform:scale(1.05) rotate(.8deg)}}
+
+/* ─── COIN PARTICLES ─── */
+.coin{
+  position:fixed;pointer-events:none;z-index:900;
+  font-size:20px;animation:coinFall 1.3s ease-in forwards;
+}
+@keyframes coinFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(220px) rotate(750deg);opacity:0}}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#0a0a14}
+::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+
+/* ─── MOBILE ─── */
+@media(max-width:380px){
+  .machine{padding:10px 7px 16px}
+  .cbtn,.lbtn{padding:6px 7px}
+}
+</style>
+</head>
+<body>
+
+<!-- COIN CONTAINER -->
+<div id="coins"></div>
+
+<!-- ═══ BIG WIN OVERLAY ═══ -->
+<div class="overlay" id="overlayBigWin">
+  <div class="bw-title" id="bwTitle">🎰 BIG WIN! 🎰</div>
+  <div class="bw-amount" id="bwAmount">+0.00 лв</div>
+  <div class="bw-sub" id="bwSub">CONGRATULATIONS!</div>
+  <button class="bw-close" onclick="closeOverlay('overlayBigWin')">COLLECT!</button>
+</div>
+
+<!-- ═══ FREE SPINS INTRO OVERLAY ═══ -->
+<div class="overlay" id="overlayFSIntro">
+  <div class="fs-intro-title">🎁 FREE SPINS! 🎁</div>
+  <div class="fs-intro-sub">Спечелихте</div>
+  <div class="fs-intro-count" id="fsIntroCount">10</div>
+  <div class="fs-intro-sub" style="font-size:13px">безплатни завъртания</div>
+  <div class="fs-intro-mult" id="fsIntroMult">Множител: ×2</div>
+  <button class="fs-start-btn" id="fsStartBtn">СТАРТ!</button>
+</div>
+
+<!-- ═══ FREE SPINS COMPLETE OVERLAY ═══ -->
+<div class="overlay" id="overlayFSDone">
+  <div class="fsc-title">✅ FREE SPINS<br>ЗАВЪРШЕНИ!</div>
+  <div class="fsc-spins" id="fscSpinsInfo">Изиграхте 10 завъртания</div>
+  <div class="fsc-total" id="fscTotal">+0.00 лв</div>
+  <div class="fsc-spins">Обща печалба от Free Spins</div>
+  <button class="fsc-close" onclick="closeOverlay('overlayFSDone')">ПРОДЪЛЖИ</button>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<div class="logo-wrap">
+  <div class="logo">🍒 FruitMania 🍒</div>
+  <div class="sub">Premium Casino · 5 Reels · 20 Lines</div>
+</div>
+
+<!-- ═══ JACKPOT METER ═══ -->
+<div class="jp-outer">
+  <div class="jp-label">💎 PROGRESSIVE JACKPOT</div>
+  <div class="jp-value" id="jpValue">50.00 лв</div>
+</div>
+
+<!-- ═══ MACHINE ═══ -->
+<div class="machine">
+
+  <!-- WIN DISPLAY -->
+  <div class="win-display">
+    <div class="win-msg" id="winMsg">Завъртете за да играете</div>
+    <div id="winAmountWrap"></div>
+  </div>
+
+  <!-- FREE SPINS BANNER (shown during FS mode) -->
+  <div class="fs-banner" id="fsBanner">
+    <div class="fs-banner-title">🎁 FREE SPINS MODE</div>
+    <div class="fs-count" id="fsCountDisplay">10</div>
+    <div class="fs-mult" id="fsMult">× 2 Множител</div>
+  </div>
+
+  <!-- REELS -->
+  <div class="reels-wrap" id="reelsWrap">
+    <div class="reels-mask"></div>
+    <div class="win-bar" id="winBar"></div>
+    <div id="grid"></div>
+  </div>
+
+  <!-- PAYLINES DOTS -->
+  <div class="pdots" id="pdots"></div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-lbl">Баланс</div>
+      <div class="stat-val" id="sBalance" style="color:#FFD700;text-shadow:0 0 8px rgba(255,215,0,.4)">500.00</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Залог</div>
+      <div class="stat-val" id="sBet" style="color:#00f5d4;text-shadow:0 0 8px rgba(0,245,212,.4)">0.90</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Печалби</div>
+      <div class="stat-val" id="sWins" style="color:#fff">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Серия FS</div>
+      <div class="stat-val" id="sStreak" style="color:#ff4466;text-shadow:0 0 8px rgba(255,68,102,.4)">0</div>
+    </div>
+  </div>
+
+  <!-- BET CONTROL -->
+  <div class="ctrl-block">
+    <div class="ctrl-lbl">Залог:</div>
+    <div class="btn-row" id="betBtns"></div>
+  </div>
+
+  <!-- LINES CONTROL -->
+  <div class="ctrl-block" style="margin-top:0">
+    <div class="ctrl-lbl">Линии:</div>
+    <div class="btn-row" id="lineBtns"></div>
+  </div>
+
+  <!-- SPIN AREA -->
+  <div class="spin-area">
+    <button class="auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+    <button class="spin-btn" id="spinBtn" onclick="triggerSpin()">SPIN</button>
+    <button class="max-btn" onclick="setMax()">MAX</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history" id="histRow"></div>
+
+  <!-- PAYTABLE -->
+  <button class="pt-btn" onclick="togglePaytable()">📋 ТАБЛИЦА НА ПЕЧАЛБИТЕ ▼</button>
+  <div class="paytable" id="paytable">
+    <div class="pt-title">💰 Таблица на печалбите</div>
+    <div class="pt-grid" id="ptGrid"></div>
+    <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;text-align:center;margin:4px 0 8px">
+      ✦ Специални комбинации ✦
+    </div>
+    <div class="special-grid" id="specialGrid"></div>
+    <div class="pt-note">
+      RTP ~63% &nbsp;|&nbsp; Шанс за печалба: 30–60% &nbsp;|&nbsp; 5 барабана × 3 реда &nbsp;|&nbsp; 20 линии<br>
+      SCATTER × 3/4/5 = FREE SPINS с множител &nbsp;|&nbsp; WILD замества всички символи<br>
+      По време на FREE SPINS: SCATTER символът е блокиран — не може да спечелите нови FS!
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  SYMBOLS
+// ══════════════════════════════════════════════════
+const SYM = [
+  {id:'cherry', e:'🍒', n:'Череша',   w:18, p:[0,0,0,2,5,15]},
+  {id:'lemon',  e:'🍋', n:'Лимон',    w:16, p:[0,0,0,2,4,12]},
+  {id:'orange', e:'🍊', n:'Портокал', w:14, p:[0,0,0,3,6,18]},
+  {id:'grape',  e:'🍇', n:'Грозде',   w:13, p:[0,0,0,4,8,22]},
+  {id:'melon',  e:'🍈', n:'Пъпеш',    w:12, p:[0,0,0,5,10,30]},
+  {id:'peach',  e:'🍑', n:'Праскова', w:10, p:[0,0,0,6,14,40]},
+  {id:'apple',  e:'🍎', n:'Ябълка',   w:9,  p:[0,0,0,8,18,55]},
+  {id:'star',   e:'⭐', n:'Звезда',   w:6,  p:[0,0,2,8,30,100]},
+  {id:'bell',   e:'🔔', n:'Камбана',  w:4,  p:[0,0,3,12,45,150]},
+  {id:'seven',  e:'7️⃣', n:'Седем',    w:3,  p:[0,0,5,25,80,300]},
+  {id:'diamond',e:'💎', n:'Диамант',  w:2,  p:[0,0,8,40,150,750], isJP:true},
+  {id:'wild',   e:'🃏', n:'WILD',     w:2,  p:[0,0,10,50,200,1000], isWild:true},
+  {id:'scatter',e:'💰', n:'SCATTER',  w:3,  p:[0,0,0,0,0,0], isScatter:true},
+];
+const WILD_I    = SYM.findIndex(s=>s.isWild);
+const SCATTER_I = SYM.findIndex(s=>s.isScatter);
+const JP_I      = SYM.findIndex(s=>s.isJP);
+
+// ══════════════════════════════════════════════════
+//  20 PAYLINES (5 reels × 3 rows, row index per reel)
+// ══════════════════════════════════════════════════
+const LINES = [
+  [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],
+  [0,1,2,1,0],[2,1,0,1,2],
+  [0,0,1,2,2],[2,2,1,0,0],
+  [1,0,0,0,1],[1,2,2,2,1],
+  [0,1,1,1,0],[2,1,1,1,2],
+  [1,2,1,0,1],[1,0,1,2,1],
+  [0,1,0,1,0],[2,1,2,1,2],
+  [0,2,0,2,0],[2,0,2,0,2],
+  [1,1,0,1,1],[1,1,2,1,1],
+  [0,0,2,0,0],
+];
+
+const BET_OPTS  = [0.10,0.25,0.50,1.00,2.50,5.00,50.00];
+const LINE_OPTS = [1,3,5,9,15,20];
+
+// ══════════════════════════════════════════════════
+//  FREE SPINS CONFIG — tiers triggered by scatter count
+// ══════════════════════════════════════════════════
+const FS_TIERS = {
+  3: {spins:10, mult:3,  label:'10 завъртания × 2'},
+  4: {spins:15, mult:5,  label:'15 завъртания × 3'},
+  5: {spins:25, mult:10,  label:'25 завъртания × 5'},
+};
+// During FS, retrigger if you hit 3+ scatters again:
+// 3 scatters → +5 spins, 4 → +10, 5 → +15
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+let balance      = 500.00;
+let betPerLine   = 0.10;
+let activeLines  = 9;
+let jackpot      = 29746.72;
+let spinning     = false;
+let autoPlay     = false;
+let autoTimer    = null;
+let totalWins    = 0;
+let fsStreak     = 0; // consecutive FS triggers
+let history      = [];
+let initialBal   = 500.00;
+
+// Free Spins state
+let fsMode       = false;
+let fsRemaining  = 0;
+let fsMult       = 1;
+let fsTotalWin   = 0;
+let fsSpinsPlayed= 0;
+let fsTotalSpins = 0;
+
+// Grid: [col 0..4][row 0..2] = symbol index
+let grid = make_grid();
+
+// ══════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════
+function weighted(){
+  let tot = SYM.reduce((s,x)=>s+x.w,0), r=Math.random()*tot;
+  for(let i=0;i<SYM.length;i++){r-=SYM[i].w;if(r<=0)return i;}
+  return 0;
+}
+function make_grid(){
+  return Array.from({length:5},()=>Array.from({length:3},()=>weighted()));
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function get_win_prob(){
+  const ratio = balance / initialBal;
+  if(ratio>=2) return 0.30 + Math.random()*0.30;
+  return 0.38 + Math.random()*0.14;
+}
+
+// ══════════════════════════════════════════════════
+//  GENERATE RESULT (smart: force win if RNG says so)
+// ══════════════════════════════════════════════════
+function gen_result(isFS){
+  const g = make_grid();
+  const willWin = isFS ? (Math.random()<0.33) : (Math.random()<get_win_prob());
+  if(willWin && !isFS){
+    // Force a win on a random active line
+    const li   = Math.floor(Math.random()*activeLines);
+    const line = LINES[li];
+    const si   = weighted();
+    const len  = 3 + Math.floor(Math.random()*3);
+    for(let c=0;c<len;c++) g[c][line[c]] = si;
+  }
+  // During FS: force a normal symbol win (no scatters allowed)
+  if(isFS && Math.random()<0.55){
+    const li   = Math.floor(Math.random()*activeLines);
+    const line = LINES[li];
+    // Pick a non-scatter, non-wild symbol
+    let si = weighted();
+    while(SYM[si].isScatter || SYM[si].isWild) si = weighted();
+    const len = 3 + Math.floor(Math.random()*3);
+    for(let c=0;c<len;c++) g[c][line[c]] = si;
+  }
+  // During FS: make sure NO scatters appear on the grid at all
+  if(isFS){
+    for(let c=0;c<5;c++) for(let r=0;r<3;r++){
+      if(SYM[g[c][r]].isScatter){
+        let rep = weighted();
+        while(SYM[rep].isScatter) rep = weighted();
+        g[c][r] = rep;
+      }
+    }
+  }
+  return g;
+}
+
+// ══════════════════════════════════════════════════
+//  EVALUATE GRID
+// ══════════════════════════════════════════════════
+function evaluate(g, bpl, lines, mult){
+  let total=0;
+  const hlCells=new Set();
+  let scatters=0, jpWon=false, bigWin=false, winLines=[];
+
+  for(let c=0;c<5;c++) for(let r=0;r<3;r++)
+    if(SYM[g[c][r]].isScatter) scatters++;
+
+  for(let li=0;li<lines;li++){
+    const line=LINES[li];
+    let msym=-1, mlen=0;
+    for(let c=0;c<5;c++){
+      const s=g[c][line[c]], iw=SYM[s].isWild;
+      if(c===0){msym=iw?-1:s;mlen=1;continue;}
+      if(iw||s===msym||(msym===-1&&!SYM[s].isScatter)){
+        if(msym===-1&&!iw) msym=s;
+        mlen++;
+      } else break;
+    }
+    const eff=msym===-1?WILD_I:msym;
+    if(mlen>=3&&eff>=0&&!SYM[eff].isScatter){
+      const m=SYM[eff].p[mlen];
+      if(m>0){
+        const lw=(m*bpl)*mult;
+        total+=lw; winLines.push({li,mlen,sym:eff,win:lw});
+        for(let c=0;c<mlen;c++) hlCells.add(`${c}-${line[c]}`);
+        if(SYM[eff].isJP&&mlen===5) jpWon=true;
+        if(m>=100) bigWin=true;
+      }
+    }
+  }
+  return {total,hlCells,scatters,jpWon,bigWin,winLines};
+}
+
+// ══════════════════════════════════════════════════
+//  BUILD DOM
+// ══════════════════════════════════════════════════
+function build_grid(){
+  const wrap=document.getElementById('grid');
+  wrap.innerHTML='';
+  for(let r=0;r<3;r++){
+    const row=document.createElement('div');
+    row.className='reel-row';
+    row.id=`row-${r}`;
+    for(let c=0;c<5;c++){
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.id=`cell-${r}-${c}`;
+      const span=document.createElement('span');
+      span.id=`sym-${r}-${c}`;
+      cell.appendChild(span);
+      row.appendChild(cell);
+    }
+    wrap.appendChild(row);
+  }
+}
+
+function build_pdots(){
+  const wrap=document.getElementById('pdots');
+  wrap.innerHTML='';
+  for(let i=0;i<20;i++){
+    const d=document.createElement('div');
+    d.className='pdot'+(i<activeLines?' on':'');
+    d.id=`pd-${i}`;
+    wrap.appendChild(d);
+  }
+}
+
+function build_controls(){
+  const bb=document.getElementById('betBtns');
+  bb.innerHTML='';
+  BET_OPTS.forEach(b=>{
+    const btn=document.createElement('button');
+    btn.className='cbtn'+(betPerLine===b?' sel':'');
+    btn.textContent=b.toFixed(2);
+    btn.setAttribute('data-bet',b);
+    btn.onclick=()=>{ if(spinning||fsMode)return; betPerLine=b; update_bet_btns(); updateStats(); };
+    bb.appendChild(btn);
+  });
+  const lb=document.getElementById('lineBtns');
+  lb.innerHTML='';
+  LINE_OPTS.forEach(l=>{
+    const btn=document.createElement('button');
+    btn.className='lbtn'+(activeLines===l?' sel':'');
+    btn.textContent=l;
+    btn.setAttribute('data-lines',l);
+    btn.onclick=()=>{ if(spinning||fsMode)return; activeLines=l; update_line_btns(); updateStats(); update_pdots(); };
+    lb.appendChild(btn);
+  });
+}
+
+function build_paytable(){
+  const pg=document.getElementById('ptGrid');
+  pg.innerHTML='';
+  SYM.filter(s=>!s.isScatter&&!s.isWild).forEach(s=>{
+    const row=document.createElement('div');
+    row.className='pt-row';
+    row.innerHTML=`<span class="pt-sym">${s.e}</span><div><div class="pt-name">${s.n}</div><div class="pt-pays">3×${s.p[3]} · 4×${s.p[4]} · 5×${s.p[5]}</div></div>`;
+    pg.appendChild(row);
+  });
+  const sg=document.getElementById('specialGrid');
+  sg.innerHTML=`
+    <div class="sp-row"><span class="sp-syms">🃏🃏🃏🃏🃏</span><span class="sp-desc">5× WILD — максимален множител</span><span class="sp-prize" style="color:#00f5d4">×1000</span></div>
+    <div class="sp-row"><span class="sp-syms">💰💰💰</span><span class="sp-desc">SCATTER×3 → 10 Free Spins (×2 множител)</span><span class="sp-prize" style="color:#00ff88">FREE SPINS</span></div>
+    <div class="sp-row"><span class="sp-syms">💰💰💰💰</span><span class="sp-desc">SCATTER×4 → 15 Free Spins (×3 множител)</span><span class="sp-prize" style="color:#00ff88">+MULT ×3</span></div>
+    <div class="sp-row"><span class="sp-syms">💰💰💰💰💰</span><span class="sp-desc">SCATTER×5 → 25 Free Spins (×5 множител)</span><span class="sp-prize" style="color:#f72585">MEGA FS!</span></div>
+    <div class="sp-row"><span class="sp-syms">💰 (во FS)</span><span class="sp-desc">SCATTER не се появява по време на Free Spins</span><span class="sp-prize" style="color:#ff4466">БЛОКИРАН</span></div>
+    <div class="sp-row"><span class="sp-syms">💎💎💎💎💎</span><span class="sp-desc">5× ДИАМАНТ — JACKPOT!</span><span class="sp-prize" style="color:#cc88ff">JACKPOT</span></div>
+  `;
+}
+
+// ══════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════
+function render_grid(g, hl){
+  for(let c=0;c<5;c++){
+    for(let r=0;r<3;r++){
+      const cell=document.getElementById(`cell-${r}-${c}`);
+      const span=document.getElementById(`sym-${r}-${c}`);
+      if(!cell||!span) continue;
+      span.textContent=SYM[g[c][r]].e;
+      const isHL=hl&&hl.has(`${c}-${r}`);
+      cell.classList.toggle('hl',isHL);
+      cell.classList.remove('spin-anim');
+    }
+  }
+}
+
+function clear_hl(){
+  for(let c=0;c<5;c++) for(let r=0;r<3;r++){
+    document.getElementById(`cell-${r}-${c}`)?.classList.remove('hl');
+  }
+}
+
+function updateStats(){
+  const bet=(betPerLine*activeLines);
+  document.getElementById('sBalance').textContent=balance.toFixed(2);
+  document.getElementById('sBet').textContent=fsMode?'FREE':bet.toFixed(2);
+  document.getElementById('sWins').textContent=totalWins;
+  document.getElementById('sStreak').textContent=fsStreak;
+  document.getElementById('jpValue').textContent=jackpot.toFixed(2)+' лв';
+}
+function update_pdots(){
+  for(let i=0;i<20;i++){
+    const d=document.getElementById(`pd-${i}`);
+    if(d) d.className='pdot'+(i<activeLines?' on':'');
+  }
+}
+function update_bet_btns(){
+  document.querySelectorAll('#betBtns .cbtn').forEach(b=>{
+    b.classList.toggle('sel',parseFloat(b.getAttribute('data-bet'))===betPerLine);
+  });
+}
+function update_line_btns(){
+  document.querySelectorAll('#lineBtns .lbtn').forEach(b=>{
+    b.classList.toggle('sel',parseInt(b.getAttribute('data-lines'))===activeLines);
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  ANIMATE SPIN
+// ══════════════════════════════════════════════════
+async function animate_spin(finalGrid){
+  const STOP = [12,15,18,21,25]; // frames to stop each reel
+  let frame=0;
+  const stopped=[false,false,false,false,false];
+
+  // Add spin class
+  for(let c=0;c<5;c++) for(let r=0;r<3;r++)
+    document.getElementById(`cell-${r}-${c}`)?.classList.add('spin-anim');
+
+  return new Promise(resolve=>{
+    const iv=setInterval(()=>{
+      frame++;
+      for(let c=0;c<5;c++){
+        if(!stopped[c]){
+          for(let r=0;r<3;r++){
+            const span=document.getElementById(`sym-${r}-${c}`);
+            if(span) span.textContent=SYM[weighted()].e;
+          }
+          if(frame>=STOP[c]){
+            stopped[c]=true;
+            for(let r=0;r<3;r++){
+              const cell=document.getElementById(`cell-${r}-${c}`);
+              const span=document.getElementById(`sym-${r}-${c}`);
+              if(cell) cell.classList.remove('spin-anim');
+              if(span) span.textContent=SYM[finalGrid[c][r]].e;
+            }
+          }
+        }
+      }
+      if(stopped.every(Boolean)){clearInterval(iv);resolve();}
+    },62);
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  COINS
+// ══════════════════════════════════════════════════
+function spawn_coins(n){
+  const wrap=document.getElementById('coins');
+  const EMOJIS=['🪙','💰','✨','⭐','🎉'];
+  for(let i=0;i<n;i++){
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='coin';
+      d.textContent=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+      d.style.left=(10+Math.random()*80)+'vw';
+      d.style.top=(15+Math.random()*45)+'vh';
+      wrap.appendChild(d);
+      setTimeout(()=>d.remove(),1400);
+    },i*80);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SHOW WIN AMOUNT
+// ══════════════════════════════════════════════════
+function show_win(amount, msg, color){
+  document.getElementById('winMsg').textContent=msg;
+  document.getElementById('winMsg').style.color=color||'#777';
+  const wrap=document.getElementById('winAmountWrap');
+  wrap.innerHTML='';
+  if(amount>0){
+    const el=document.createElement('div');
+    el.className='win-amount';
+    el.textContent='+'+amount.toFixed(2)+' лв';
+    if(color) el.style.color=color;
+    wrap.appendChild(el);
+  }
+}
+function clear_win(){
+  document.getElementById('winMsg').textContent='Завъртете...';
+  document.getElementById('winMsg').style.color='';
+  document.getElementById('winAmountWrap').innerHTML='';
+  document.getElementById('winBar').classList.remove('on');
+  clear_hl();
+}
+
+// ══════════════════════════════════════════════════
+//  FREE SPINS — TRIGGER
+// ══════════════════════════════════════════════════
+function trigger_fs(scatterCount){
+  const tier = FS_TIERS[Math.min(scatterCount,5)] || FS_TIERS[3];
+  fsMode        = true;
+  fsRemaining   = tier.spins;
+  fsMult        = tier.mult;
+  fsTotalWin    = 0;
+  fsSpinsPlayed = 0;
+  fsTotalSpins  = tier.spins;
+  fsStreak++;
+
+  // Show intro overlay
+  document.getElementById('fsIntroCount').textContent = tier.spins;
+  document.getElementById('fsIntroMult').textContent  = 'Множител: ×'+tier.mult;
+  document.getElementById('overlayFSIntro').classList.add('on');
+
+  // Banner
+  document.getElementById('fsBanner').classList.add('on');
+  document.getElementById('fsCountDisplay').textContent=fsRemaining;
+  document.getElementById('fsMult').textContent='× '+fsMult+' Множител';
+
+  // Disable controls during FS
+  document.getElementById('autoBtn').disabled=true;
+}
+
+
+function finish_fs(){
+  fsMode=false;
+  document.getElementById('fsBanner').classList.remove('on');
+  document.getElementById('autoBtn').disabled=false;
+
+  // Show summary overlay
+  document.getElementById('fscSpinsInfo').textContent='Изиграхте '+fsTotalSpins+' завъртания';
+  document.getElementById('fscTotal').textContent='+'+fsTotalWin.toFixed(2)+' лв';
+  document.getElementById('overlayFSDone').classList.add('on');
+  spawn_coins(15);
+}
+
+// ══════════════════════════════════════════════════
+//  CORE SPIN
+// ══════════════════════════════════════════════════
+async function do_spin(){
+  if(spinning) return;
+  const bet=betPerLine*activeLines;
+
+  if(!fsMode){
+    if(balance<bet){ show_win(0,'Недостатъчен баланс!','#ff4466'); return; }
+    balance-=bet;
+    jackpot+=bet*0.01;
+  }
+
+  spinning=true;
+  document.getElementById('spinBtn').disabled=true;
+  document.getElementById('spinBtn').classList.add('spinning');
+  clear_win();
+
+  const finalGrid=gen_result(fsMode);
+  await animate_spin(finalGrid);
+  grid=finalGrid;
+
+  const mult  = fsMode ? fsMult : 1;
+  const result= evaluate(grid, betPerLine, activeLines, mult);
+
+  render_grid(grid, result.hlCells);
+
+  if(result.hlCells.size>0) document.getElementById('winBar').classList.add('on');
+
+  // ── JACKPOT ──
+  if(result.jpWon && !fsMode){
+    const jpWin=jackpot;
+    balance+=jpWin; jackpot=50.00;
+    setTimeout(()=>{
+      document.getElementById('bwTitle').textContent='💎 JACKPOT! 💎';
+      document.getElementById('bwAmount').textContent='+'+jpWin.toFixed(2)+' лв';
+      document.getElementById('bwSub').textContent='НЕВЕРОЯТНО!';
+      document.getElementById('overlayBigWin').classList.add('on');
+    },400);
+    spawn_coins(25); totalWins++;
+    push_history(jpWin,bet,'w');
+  }
+  // ── SCATTER (trigger FS) — only outside FS ──
+  else if(result.scatters>=3 && !fsMode){
+    // Award any line wins first
+    if(result.total>0){ balance+=result.total; totalWins++; }
+    push_history(result.total,bet,'fs');
+    await sleep(300);
+    trigger_fs(result.scatters);
+  }
+  // ── NORMAL WIN ──
+  else if(result.total>0){
+    balance+=result.total;
+    if(fsMode){ fsTotalWin+=result.total; }
+    totalWins++;
+    const isBig=result.bigWin;
+    show_win(result.total, isBig?(fsMode?'🔥 BIG WIN × '+fsMult+'!':'🔥 BIG WIN!'):'✨ Печалба!',
+             isBig?'#FFD700':'#FFD700');
+    if(isBig){
+      await sleep(400);
+      document.getElementById('bwTitle').textContent=fsMode?'🔥 BIG WIN × '+fsMult+'!':'🔥 BIG WIN!';
+      document.getElementById('bwAmount').textContent='+'+result.total.toFixed(2)+' лв';
+      document.getElementById('bwSub').textContent=result.winLines.length+' линии спечелени!';
+      document.getElementById('overlayBigWin').classList.add('on');
+      spawn_coins(12);
+    } else {
+      spawn_coins(4);
+    }
+    push_history(result.total,bet,'w');
+    if(fsMode){
+      fsRemaining--;
+      if(fsRemaining<=0) setTimeout(finish_fs,isBig?1600:1000);
+      else document.getElementById('fsCountDisplay').textContent=fsRemaining;
+    }
+  }
+  // ── NO WIN ──
+  else {
+    show_win(0,'Опитайте отново...','#555');
+    push_history(0,bet,'l');
+    if(fsMode){
+      fsRemaining--;
+      if(fsRemaining<=0) setTimeout(finish_fs,900);
+      else document.getElementById('fsCountDisplay').textContent=fsRemaining;
+    }
+  }
+
+  updateStats();
+  spinning=false;
+  document.getElementById('spinBtn').disabled=false;
+  document.getElementById('spinBtn').classList.remove('spinning');
+
+  // AUTO
+  if(autoPlay && !fsMode){
+    autoTimer=setTimeout(do_spin,1300+Math.random()*400);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  AUTO FS SPIN (called after FS intro dismissed)
+// ══════════════════════════════════════════════════
+async function run_fs_spins(){
+  while(fsMode && fsRemaining>0){
+    await sleep(700+Math.random()*300);
+    if(!spinning) await do_spin();
+    // wait for spin to finish
+    await sleep(200);
+    while(spinning) await sleep(100);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════════════
+function push_history(win,bet,type){
+  history.unshift({win,bet,type});
+  if(history.length>8) history.pop();
+  const row=document.getElementById('histRow');
+  row.innerHTML='';
+  history.forEach(h=>{
+    const d=document.createElement('div');
+    d.className='h-item'+(h.type==='w'?' w':h.type==='fs'?' fs':'');
+    d.textContent=h.win>0?'+'+h.win.toFixed(2):'-'+h.bet.toFixed(2);
+    row.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  PUBLIC API
+// ══════════════════════════════════════════════════
+function triggerSpin(){
+  if(spinning||fsMode) return;
+  if(autoPlay){ clearTimeout(autoTimer); autoPlay=false; document.getElementById('autoBtn').classList.remove('on'); }
+  do_spin();
+}
+function toggleAuto(){
+  if(fsMode) return;
+  autoPlay=!autoPlay;
+  document.getElementById('autoBtn').classList.toggle('on',autoPlay);
+  if(autoPlay && !spinning) do_spin();
+  else if(!autoPlay) clearTimeout(autoTimer);
+}
+function setMax(){
+  if(spinning||fsMode) return;
+  betPerLine=5.00; activeLines=20;
+  update_bet_btns(); update_line_btns(); update_pdots(); updateStats();
+}
+function togglePaytable(){
+  const pt=document.getElementById('paytable');
+  pt.classList.toggle('open');
+  document.querySelector('.pt-btn').textContent=
+    pt.classList.contains('open')?'📋 ТАБЛИЦА НА ПЕЧАЛБИТЕ ▲':'📋 ТАБЛИЦА НА ПЕЧАЛБИТЕ ▼';
+}
+function closeOverlay(id){
+  document.getElementById(id).classList.remove('on');
+}
+
+// FS Start button
+document.getElementById('fsStartBtn').addEventListener('click',()=>{
+  closeOverlay('overlayFSIntro');
+  run_fs_spins();
+});
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='Enter'){e.preventDefault();triggerSpin();}
+});
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+build_grid();
+build_pdots();
+build_controls();
+build_paytable();
+render_grid(make_grid());
+updateStats();
+</script>
+</body>
+</html>
